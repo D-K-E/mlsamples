@@ -2,7 +2,7 @@
 \brief yolo based instance detector
 """
 from mlsamples.task.detection.detect_interface import Detection, Detector
-from mlsamples.misc.utils from is_optional_type, load_yolo, YoloTask
+from mlsamples.misc.utils import is_optional_type, load_yolo, YoloTask
 from pathlib import Path
 from collections.abc import Iterator
 

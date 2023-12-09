@@ -30,6 +30,11 @@ class DetectronPoseEstimator(PoseEstimator):
         for t in range(T):
             frame = clip[t, :]
             preds = self.model(frame)
-            result = dict(pred_keypoints=preds["instances"].pred_keypoints, frame=frame)
+            keypoints: torch.Tensor = preds["instances"].pred_keypoints
+            # transform keypoints to Tensor[Number of keypoints, XY]
+            N, num_kpts, C = keypoints.shape
+            nkpts = keypoints.resize((N * num_kpts, C))
+            kpts = nkpts[:, :2]
+            result = dict(pred_keypoints=kpts, frame=frame)
             mask = DetectronKeypoints(result)
             yield mask
