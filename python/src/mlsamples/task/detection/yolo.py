@@ -1,30 +1,25 @@
 """
 \brief yolo based instance detector
 """
-from ultralytics import YOLO
-from .detect_interface import Detection, Detector
+from mlsamples.task.detection.detect_interface import Detection, Detector
+from mlsamples.misc.utils from is_optional_type, load_yolo, YoloTask
 from pathlib import Path
 from collections.abc import Iterator
-
-
-def load_model(path: str = "YOLOv8x.pt"):
-    "load a detection model based on YoloV8"
-    model = YOLO(name)
-    return model
 
 
 class YoloDetection(Detection):
     """"""
 
     def __init__(self, result):
-        super().__init__(frame=result.orig_frame, boxes=result.bboxes)
+        super().__init__(frame=result.orig_img, boxes=result.bboxes.data)
 
 
 class YoloDetector(Detector):
     """"""
 
     def __init__(self):
-        self.model = load_model()
+        ""
+        self.model = load_yolo(YoloTask.DETECTION)
 
     def detect(self, video: Path) -> Iterator[Detection]:
         """"""

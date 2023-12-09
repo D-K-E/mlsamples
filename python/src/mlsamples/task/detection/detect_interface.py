@@ -3,8 +3,12 @@
 """
 from abc import ABC, abstractmethod
 from pathlib import Path
+from mlsamples.misc.utils import is_optional_type
+from mlsamples.misc.utils import is_type
+from mlsamples.misc.utils import FrameContainer
 
 from collections.abc import Iterator
+import torch
 
 
 class BaseDetection(ABC):
@@ -23,24 +27,23 @@ class BaseDetection(ABC):
         raise NotImplementedError
 
 
-class Detection(BaseDetection):
+class Detection(BaseDetection, FrameContainer):
     def __init__(self, boxes: torch.Tensor, frame: torch.Tensor):
+        super().__init__(frame=frame)
+        is_optional_type(boxes, "boxes", torch.Tensor, True)
         self._bboxes = boxes
-        self._frame = frame
+
+    def set_bboxes(self, bboxes: torch.Tensor):
+        """"""
+        is_type(bboxes, "bboxes", torch.Tensor, True)
+        self._bboxes = bboxes
 
     @property
     def bboxes(self):
-        if not isinstance(self._bboxes, torch.Tensor):
-            raise TypeError(f"bboxes must be a tensor but it is {type(self._bboxes)}")
-        return self._bboxes
-
-    @property
-    def frame(self):
         """"""
-        if not isinstance(self._frame, torch.Tensor):
-            raise TypeError(f"masks must be a tensor but it is {type(self._frame)}")
-
-        return self._frame
+        if self._bboxes is None:
+            raise ValueError("bboxes is none")
+        return self._bboxes
 
 
 class Detector(ABC):

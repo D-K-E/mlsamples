@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import List
 import torch
 from collections.abc import Iterator
+from mlsamples.misc.utils import FrameContainer
 
 
 class BaseMask(ABC):
@@ -25,24 +26,24 @@ class BaseMask(ABC):
         raise NotImplementedError
 
 
-class SegmentationMask(BaseMask):
-    def __init__(self, masks, frame):
+class SegmentationMask(BaseMask, FrameContainer):
+    def __init__(
+        self, masks: Optional[torch.Tensor] = None, frame: Optional[torch.Tensor] = None
+    ):
+        super().__init__(frame=frame)
+        is_optional_type(masks, "masks", torch.Tensor, True)
         self._masks = masks
-        self._frame = frame
+
+    def set_masks(self, masks: torch.Tensor):
+        """"""
+        is_type(masks, "masks", torch.Tensor, True)
+        self._masks = masks
 
     @property
     def masks(self):
-        if not isinstance(self._masks, torch.Tensor):
-            raise TypeError(f"masks must be a tensor but it is {type(self._masks)}")
+        if self._masks is None:
+            raise ValueError("masks is none")
         return self._masks
-
-    @property
-    def frame(self):
-        """"""
-        if not isinstance(self._frame, torch.Tensor):
-            raise TypeError(f"masks must be a tensor but it is {type(self._frame)}")
-
-        return self._frame
 
 
 class Segmenter(ABC):

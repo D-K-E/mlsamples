@@ -4,11 +4,14 @@
 import argparse
 from datetime import datetime
 from pathlib import Path
-from samples.taskrunner import Backend, Task
+from mlsamples.pipeline.builder import Pipeline, build_pipeline
+from mlsamples.misc.utils import Backend, Task
 
 
-def run_task(backend, task, video: Path):
+def run_task(backend: Backend, task: Task, in_video: Path, save_loc: Path):
     """"""
+    pipe = build_pipeline(backend=backend, task=task, save_location=save_loc)
+    pipe.run(in_video)
 
 
 if __name__ == "__main__":
@@ -16,7 +19,8 @@ if __name__ == "__main__":
     backends = dict(yolo=Backend.YOLO, detectron=Backend.DETECTRON)
     tasks = dict(
         segment=Task.SEGMENTATION,
-        detect=Task.OBJECT_DETECTION,
+        detect=Task.DETECTION,
+        pose=Task.POSE_ESTIMATION,
     )
 
     parser.add_argument(
