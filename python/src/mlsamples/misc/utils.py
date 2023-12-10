@@ -62,35 +62,45 @@ class FrameContainer:
         return self._frame
 
 
-class YoloTask(Enum):
+class Task(Enum):
     SEGMENTATION = auto()
     DETECTION = auto()
     POSE_ESTIMATION = auto()
 
 
-def load_yolo(model_type: YoloTask) -> YOLO:
+def load_yolo(model_type: Task) -> YOLO:
     """
     Load yolo model
     """
-    is_type(model_type, "model_type", YoloTask, True)
-    if model_type == YoloTask.SEGMENTATION:
+    is_type(model_type, "model_type", Task, True)
+    if model_type == Task.SEGMENTATION:
         return YOLO("yolov8x-seg.pt")
-    elif model_type == YoloTask.DETECTION:
+    elif model_type == Task.DETECTION:
         return YOLO("yolov8x.pt")
-    elif model_type == YoloTask.POSE_ESTIMATION:
+    elif model_type == Task.POSE_ESTIMATION:
         return YOLO("yolov8x-pose.pt")
     else:
-        raise ValueError(f"unknown model type {str(model_type)}")
+        raise ValueError(f"unknown task {str(model_type)}")
 
 
-def load_detectron():
+def load_detectron(task: Task):
     """
     load detectron model
     """
     cfg = get_cfg()
+    if task == task.SEGMENTATION:
+        path = "COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml"
+    elif task == task.DETECTION:
+        path = "COCO-Detection/faster_rcnn_R_101_FPN_3x.yaml"
+    elif task == task.POSE_ESTIMATION:
+        path = "COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml"
+    else:
+        raise ValueError(f"unknown task {str(model_type)}")
+
     cfg.merge_from_file(model_zoo.get_config_file(path))
     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
     cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(path)
+    cfg.MODEL.DEVICE = "cpu"
     model = DefaultPredictor(cfg)
     return model
 
@@ -98,9 +108,3 @@ def load_detectron():
 class Backend(Enum):
     YOLO = auto()
     DETECTRON = auto()
-
-
-class Task(Enum):
-    SEGMENTATION = auto()
-    DETECTION = auto()
-    POSE_ESTIMATION = auto()

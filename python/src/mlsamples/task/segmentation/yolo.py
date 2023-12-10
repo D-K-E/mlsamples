@@ -5,7 +5,7 @@ from mlsamples.task.segmentation.segment_interface import SegmentationMask, Segm
 from pathlib import Path
 from collections.abc import Iterator
 
-from mlsamples.misc.utils import YoloTask
+from mlsamples.misc.utils import Task
 from mlsamples.misc.utils import load_yolo
 import numpy as np
 import torch
@@ -34,7 +34,7 @@ class YoloSegmenter(Segmenter):
     """"""
 
     def __init__(self):
-        self.model = load_yolo(YoloTask.SEGMENTATION)
+        self.model = load_yolo(Task.SEGMENTATION)
 
     def segment(self, video: Path) -> Iterator[SegmentationMask]:
         """"""

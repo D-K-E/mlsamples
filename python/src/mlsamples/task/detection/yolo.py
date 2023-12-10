@@ -2,7 +2,7 @@
 \brief yolo based instance detector
 """
 from mlsamples.task.detection.detect_interface import Detection, Detector
-from mlsamples.misc.utils import is_optional_type, load_yolo, YoloTask
+from mlsamples.misc.utils import is_optional_type, load_yolo, Task
 from pathlib import Path
 from collections.abc import Iterator
 import numpy as np
@@ -27,7 +27,7 @@ class YoloDetector(Detector):
 
     def __init__(self):
         """"""
-        self.model = load_yolo(YoloTask.DETECTION)
+        self.model = load_yolo(Task.DETECTION)
 
     def detect(self, video: Path) -> Iterator[Detection]:
         """"""
