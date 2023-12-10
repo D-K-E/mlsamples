@@ -7,6 +7,8 @@
 #include <memory>
 namespace mlsamples {
 
+namespace detection {
+
 class Yolo : public Detector {
 public:
   Yolo();
@@ -18,5 +20,6 @@ private:
   struct Impl;
   std::unique_ptr<Impl> impl;
 };
+} // namespace detection
 } // namespace mlsamples
 #endif

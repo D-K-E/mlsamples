@@ -18,7 +18,7 @@ struct Pipeline::Impl {
       : task(t), backend(b), save_loc(o) {
     if (t == Task::DETECTION) {
       if (backend == Backend::YOLO) {
-        detector.reset(new Yolo());
+        detector.reset(new detection::Yolo());
       }
     }
   }
@@ -26,11 +26,12 @@ struct Pipeline::Impl {
   void run(std::filesystem::path video) {
     std::vector<cv::Mat> frames;
     if (task == Task::DETECTION) {
-      std::vector<Detection> ds = detector->run(video);
+      std::vector<detection::Detection> ds =
+          detector->run(video);
       frames = draw(ds);
     }
     std::string filename = save_loc.string();
-    int codec = VideoWriter::fourcc('M', 'J', 'P', 'G');
+    int codec = cv::VideoWriter::fourcc('M', 'J', 'P', 'G');
     int fps = 30;
     cv::VideoWriter writer(filename, codec, fps,
                            frames[0].size(), true);
@@ -43,7 +44,7 @@ struct Pipeline::Impl {
   Backend backend;
   std::filesystem::path save_loc;
 
-  std::unique_ptr<Detector> detector{nullptr};
+  std::unique_ptr<detection::Detector> detector{nullptr};
 };
 
 Pipeline::Pipeline(Task t, Backend b,

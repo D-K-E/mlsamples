@@ -5,13 +5,13 @@
 
 //
 #include <exception>
-#include <map>
+#include <filesystem>
 
 namespace mlsamples {
 void run_task(Backend b, Task t,
               std::filesystem::path in_video,
               std::filesystem::path out) {
-  Pipeline pipe(b, t, out);
+  Pipeline pipe(t, b, out);
   pipe.run(in_video);
 }
 
@@ -26,15 +26,15 @@ int main(int argc, char *argv[]) {
   parser.add_argument("--task")
       .default_value("segment")
       .choices("segment", "detect", "pose")
-      .required(true);
+      .required();
   parser.add_argument("--video")
       .help("path to input video")
-      .required(true);
+      .required();
 
   parser.add_argument("--save_name")
       .help("save name for output video, e.g. out.mp4")
       .default_value("out.mp4")
-      .required(true);
+      .required();
   try {
     parser.parse_args(argc, argv);
   } catch (const std::exception &err) {

@@ -7,7 +7,7 @@ torch::jit::Module load(std::filesystem::path model_p) {
 
   torch::jit::script::Module m;
   try {
-    std::string s = model_p.str();
+    std::string s = model_p.string();
     m = torch::jit::load(s);
   } catch (const c10::Error &e) {
     std::cerr << "error loading the model:" << std::endl;

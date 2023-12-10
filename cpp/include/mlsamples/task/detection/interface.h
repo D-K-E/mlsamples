@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <vector>
 namespace mlsamples {
+namespace detection {
 struct Detection {
   Detection() = delete;
   Detection(torch::Tensor f, torch::Tensor b);
@@ -19,5 +20,6 @@ public:
   virtual std::vector<Detection>
   run(std::filesystem::path video) = 0;
 };
+} // namespace detection
 } // namespace mlsamples
 #endif
