@@ -15,7 +15,7 @@ class DetectronDetection(Detection):
         super().__init__(frame=result["frame"], boxes=result["pred_boxes"])
 
 
-class DetectronDetector(Segmenter):
+class DetectronDetector(Detector):
     """"""
 
     def __init__(self):

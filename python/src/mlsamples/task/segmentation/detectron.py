@@ -6,12 +6,22 @@ from mlsamples.misc.utils import load_detectron
 from pathlib import Path
 from collections.abc import Iterator
 from torchvision.io import read_video
+import numpy as np
 
 
 class DetectronMask(SegmentationMask):
     """"""
 
     def __init__(self, result: dict):
+        frame = result["frame"]
+        if isinstance(frame, np.ndarray):
+            frame = torch.tensor(frame)
+        masks = []
+        pmask = result["pred_masks"]
+        N, H, W = pmask.shape
+        for n in range(N):
+            mask = pmask[n, :]
+            points = mask.tolist()
         super().__init__(masks=result["pred_masks"], frame=result["frame"])
 
 

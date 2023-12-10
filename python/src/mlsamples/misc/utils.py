@@ -11,6 +11,7 @@ from detectron2 import model_zoo
 from detectron2.engine import DefaultPredictor
 from detectron2.config import get_cfg
 import torch
+import numpy as np
 
 
 def is_type(field_value, field_name: str, field_type, raise_error: bool = True) -> bool:
@@ -71,13 +72,13 @@ def load_yolo(model_type: YoloTask) -> YOLO:
     """
     Load yolo model
     """
-    is_type(model_type, "model_type", YoloModel, True)
+    is_type(model_type, "model_type", YoloTask, True)
     if model_type == YoloTask.SEGMENTATION:
-        return YOLO("YOLOv8x-seg.pt")
+        return YOLO("yolov8x-seg.pt")
     elif model_type == YoloTask.DETECTION:
-        return YOLO("YOLOv8x.pt")
+        return YOLO("yolov8x.pt")
     elif model_type == YoloTask.POSE_ESTIMATION:
-        return YOLO("YOLOv8x-pose.pt")
+        return YOLO("yolov8x-pose.pt")
     else:
         raise ValueError(f"unknown model type {str(model_type)}")
 

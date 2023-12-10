@@ -4,7 +4,7 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-from typing import List, Optional
+from typing import List, Optional, Tuple
 import torch
 from collections.abc import Iterator
 from mlsamples.misc.utils import is_optional_type
@@ -17,7 +17,7 @@ class BaseKeypoints(ABC):
 
     @property
     @abstractmethod
-    def keypoints(self) -> torch.Tensor:
+    def keypoints(self) -> List[Tuple[int, int]]:
         """"""
         raise NotImplementedError
 
@@ -28,7 +28,7 @@ class BaseKeypoints(ABC):
         raise NotImplementedError
 
 
-class Keypoints(BaseKeypoints, FrameContainer):
+class Keypoints(FrameContainer, BaseKeypoints):
     def __init__(
         self,
         keypoints: Optional[torch.Tensor] = None,
@@ -37,13 +37,14 @@ class Keypoints(BaseKeypoints, FrameContainer):
         super().__init__(frame=frame)
         self._keypoints = keypoints
 
-    def set_keypoints(self, keypoints: torch.Tensor):
+    def set_keypoints(self, keypoints: List[Tuple[int, int]]):
         """"""
-        is_type(keypoints, "keypoints", torch.Tensor, True)
+        is_type(keypoints, "keypoints", list, True)
+        all(is_type(k, "keypoints", tuple, True) for k in keypoints)
         self._keypoints = keypoints
 
     @property
-    def keypoints(self) -> torch.Tensor:
+    def keypoints(self) -> List[Tuple[int, int]]:
         if self._keypoints is None:
             raise ValueError("keypoints is none")
         return self._keypoints

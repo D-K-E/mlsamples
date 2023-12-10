@@ -2,7 +2,7 @@
 \brief main entrance point of command line program
 """
 import argparse
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from mlsamples.pipeline.builder import Pipeline, build_pipeline
 from mlsamples.misc.utils import Backend, Task
@@ -37,7 +37,7 @@ if __name__ == "__main__":
         required=True,
         help="path to input video e.g. face.mp4",
     )
-    now = datetime.now(datetime.UTC)
+    now = datetime.now(timezone.utc)
     ts = "-".join(map(str, now.timetuple()))
     parser.add_argument(
         "--save_name",
@@ -51,3 +51,5 @@ if __name__ == "__main__":
     in_video = Path(args.video)
     if not in_video.exists():
         raise FileNotFoundError(f"{args.video} does not exists")
+    run_task(backend=backend, task=task, in_video=in_video, save_loc=Path(args.save_name))
+    print("all done")

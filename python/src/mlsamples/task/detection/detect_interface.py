@@ -9,6 +9,7 @@ from mlsamples.misc.utils import FrameContainer
 
 from collections.abc import Iterator
 import torch
+import numpy as np
 
 
 class BaseDetection(ABC):
@@ -22,13 +23,13 @@ class BaseDetection(ABC):
 
     @property
     @abstractmethod
-    def frame(self) -> torch.Tensor:
+    def frame(self) -> np.ndarray:
         """"""
         raise NotImplementedError
 
 
-class Detection(BaseDetection, FrameContainer):
-    def __init__(self, boxes: torch.Tensor, frame: torch.Tensor):
+class Detection(FrameContainer, BaseDetection):
+    def __init__(self, boxes: torch.Tensor, frame: np.ndarray):
         super().__init__(frame=frame)
         is_optional_type(boxes, "boxes", torch.Tensor, True)
         self._bboxes = boxes

@@ -15,6 +15,7 @@ from mlsamples.misc.utils import is_type
 from mlsamples.misc.utils import Backend, Task
 import torch
 from torchvision.io import write_video
+import moviepy.editor as mpy
 
 
 class Pipeline:
@@ -36,9 +37,8 @@ class Pipeline:
         """\brief Run the pipeline and save the result to location"""
         engine_result = self.engine.run(video)
         result = self.visualizer.draw(engine_result)
-        reader = torchvision.io.VideoReader(video_path, "video")
-        reader_md = reader.get_metadata()
-        fps = reader_md["video"]["fps"]
+        clip = mpy.VideoFileClip(str(video))
+        fps = clip.fps
         write_video(filename=str(self.out), video_array=result, fps=fps)
 
 
