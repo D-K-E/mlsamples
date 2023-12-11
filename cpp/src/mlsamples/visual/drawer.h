@@ -3,7 +3,7 @@
 // basic drawing functions
 #include <mlsamples/task/detection/interface.h>
 // #include <mlsamples/task/pose/interface.h>
-#include <mlsamples/task/segmentation/interface.h>
+#include <mlsamples/task/segmentation/seginterface.h>
 #include <opencv2/core.hpp>
 #include <vector>
 

@@ -24,7 +24,8 @@ draw(const std::vector<detection::Detection> &ds) {
   return results;
 }
 
-std::vector<cv::Mat> draw(const std::vector<Masks> &masks) {
+std::vector<cv::Mat>
+draw(const std::vector<segmentation::Mask> &masks) {
 
   std::vector<cv::Mat> results;
   auto to_p = [](const std::pair<int, int> &point) {
@@ -42,11 +43,13 @@ std::vector<cv::Mat> draw(const std::vector<Masks> &masks) {
       std::vector<cv::Point> ps;
       std::transform(points.begin(), points.end(),
                      ps.begin(), to_p);
-      cv::fillConvexPoly(temp, ps.data(), cv::Scalar(0));
+      cv::fillConvexPoly(temp, ps.data(), ps.size(),
+                         cv::Scalar(0));
     }
     cv::Mat result;
     cv::addWeighted(frame, 0.8, temp, 0.2, 0, result);
     results.push_back(result);
   }
+  return results;
 }
 } // namespace mlsamples

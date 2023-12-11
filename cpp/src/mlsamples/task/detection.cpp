@@ -63,7 +63,8 @@ Yolo::run(std::filesystem::path video) {
       auto [outputs, shapes] = impl->model->infer(inputs);
       cv::Size frame_size(frame.cols, frame.rows);
       std::vector<cv::Rect> results =
-          yolo_postprocess(outputs, shapes, frame_size);
+          detection::yolo_postprocess(outputs, shapes,
+                                      frame_size);
       Detection d(frame, results);
       detections.push_back(d);
     }

@@ -1,7 +1,7 @@
 // implement detection related stuff
 #include "yoloutils.h"
-#include <mlsamples/task/segmentation/interface.h>
-#include <mlsamples/task/segmentation/yolo.h>
+#include <mlsamples/task/segmentation/seginterface.h>
+#include <mlsamples/task/segmentation/segyolo.h>
 #include <opencv2/dnn.hpp>
 #include <opencv2/videoio.hpp>
 

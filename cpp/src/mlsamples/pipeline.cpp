@@ -8,8 +8,8 @@
 #include <mlsamples/task/detection/interface.h>
 #include <mlsamples/task/detection/yolo.h>
 
-#include <mlsamples/task/segmentation/interface.h>
-#include <mlsamples/task/segmentation/yolo.h>
+#include <mlsamples/task/segmentation/seginterface.h>
+#include <mlsamples/task/segmentation/segyolo.h>
 
 #include <opencv2/videoio.hpp>
 
@@ -38,7 +38,7 @@ struct Pipeline::Impl {
       frames = draw(ds);
     } else if (task == Task::SEGMENTATION) {
       std::vector<segmentation::Mask> ds =
-          segmentation->run(video);
+          segmenter->run(video);
       frames = draw(ds);
     }
     std::string filename = save_loc.string();

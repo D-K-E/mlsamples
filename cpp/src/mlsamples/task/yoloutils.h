@@ -24,15 +24,15 @@ cv::Rect yolo_get_rect(const cv::Size &imgSz,
                        const std::vector<float> &bbox);
 
 namespace detection {
-std::vector<std::vector<std::pair<int, int>>>
-yolo_postprocess(
+std::vector<cv::Rect> yolo_postprocess(
     const std::vector<std::vector<float>> &outputs,
     const std::vector<std::vector<int64_t>> &shapes,
     const cv::Size &frame_size);
 }
 
 namespace segmentation {
-std::vector<cv::Rect> yolo_postprocess(
+std::vector<std::vector<std::pair<int, int>>>
+yolo_postprocess(
     const std::vector<std::vector<float>> &outputs,
     const std::vector<std::vector<int64_t>> &shapes,
     const cv::Size &frame_size);

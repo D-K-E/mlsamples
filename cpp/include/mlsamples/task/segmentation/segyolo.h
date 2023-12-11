@@ -1,10 +1,12 @@
-#ifndef YOLO_H
-#define YOLO_H
-#include "interface.h"
+#ifndef SEGYOLO_H
+#define SEGYOLO_H
+
+#include "seginterface.h"
 
 //
 #include <filesystem>
 #include <memory>
+
 namespace mlsamples {
 namespace segmentation {
 
@@ -19,6 +21,7 @@ private:
   struct Impl;
   std::unique_ptr<Impl> impl;
 };
+
 } // namespace segmentation
 } // namespace mlsamples
 #endif

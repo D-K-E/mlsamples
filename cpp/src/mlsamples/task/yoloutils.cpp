@@ -184,12 +184,12 @@ std::vector<cv::Rect> yolo_postprocess(
 namespace segmentation {
 std::vector<std::vector<std::pair<int, int>>>
 yolo_postprocess(
-    const std::vector<std::vector<float>> &outputs,
-    const std::vector<std::vector<int64_t>> &shapes,
+    const std::vector<std::vector<float>> &output,
+    const std::vector<std::vector<int64_t>> &shape,
     const cv::Size &frame_size) {
   const auto offset = 4;
   const auto num_classes =
-      shapes[0][1] - offset - shapes[1][1];
+      shape[0][1] - offset - shape[1][1];
   std::vector<std::vector<float>> output0_matrix(
       shape[0][1], std::vector<float>(shape[0][2]));
 
@@ -243,15 +243,15 @@ yolo_postprocess(
   std::vector<int> indices;
   cv::dnn::NMSBoxes(boxes, confs, conf_threshold,
                     iou_threshold, indices);
-  Mask segMask;
   int sc, sh, sw;
   std::tie(sc, sh, sw) =
       std::make_tuple(static_cast<int>(shape[1][1]),
                       static_cast<int>(shape[1][2]),
                       static_cast<int>(shape[1][3]));
   cv::Mat segm =
-      cv::Mat(std::vector<float>(output1,
-                                 output1 + sc * sh * sw))
+      cv::Mat(std::vector<float>(output[1].begin(),
+                                 output[1].begin() +
+                                     sc * sh * sw))
           .reshape(0, {sc, sw * sh});
   cv::Mat maskProposals;
   for (int i = 0; i < indices.size(); i++) {
@@ -262,8 +262,11 @@ yolo_postprocess(
   std::vector<std::vector<std::pair<int, int>>> masks;
   for (int i = 0; i < maskProposals.rows; ++i) {
     for (int j = 0; j < maskProposals.cols; ++j) {
-      auto pix = maskProposals.at<i, j>();
-      std::cout << i << " x " << j << " :: " << pix;
+      cv::Point p(i, j);
+      auto pix = maskProposals.at<unsigned int>(p);
+      std::cout << i << " x " << j < < < <
+          " x " << maskProposals.channels()
+                << " :: " << pix;
     }
   }
   return masks;

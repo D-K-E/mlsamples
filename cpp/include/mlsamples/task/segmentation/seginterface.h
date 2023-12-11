@@ -1,5 +1,5 @@
-#ifndef INTERFACE_H
-#define INTERFACE_H
+#ifndef SEGINTERFACE_H
+#define SEGINTERFACE_H
 
 #include <opencv2/core.hpp>
 //
@@ -9,6 +9,7 @@
 #include <vector>
 namespace mlsamples {
 namespace segmentation {
+
 struct Mask {
   Mask() = delete;
   Mask(cv::Mat f,
