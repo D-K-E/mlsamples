@@ -1,18 +1,21 @@
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
-#include <torch/torch.h>
+#include <opencv2/core.hpp>
 //
 
 #include <filesystem>
 #include <tuple>
 #include <vector>
 namespace mlsamples {
+namespace segmentation {
 struct Mask {
   Mask() = delete;
-  Mask(torch::Tensor f,
-       std::vector<std::vector<std::pair<int, int>>> m);
-  torch::Tensor frame;
+  Mask(cv::Mat f,
+       const std::vector<std::vector<std::pair<int, int>>>
+           &m);
+
+  cv::Mat frame;
   std::vector<std::vector<std::pair<int, int>>> masks;
 };
 
@@ -21,5 +24,6 @@ public:
   virtual std::vector<Mask>
   run(std::filesystem::path video) = 0;
 };
+} // namespace segmentation
 } // namespace mlsamples
 #endif

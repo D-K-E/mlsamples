@@ -8,6 +8,9 @@
 #include <mlsamples/task/detection/interface.h>
 #include <mlsamples/task/detection/yolo.h>
 
+#include <mlsamples/task/segmentation/interface.h>
+#include <mlsamples/task/segmentation/yolo.h>
+
 #include <opencv2/videoio.hpp>
 
 namespace mlsamples {
@@ -20,6 +23,10 @@ struct Pipeline::Impl {
       if (backend == Backend::YOLO) {
         detector.reset(new detection::Yolo());
       }
+    } else if (t == Task::SEGMENTATION) {
+      if (backend == Backend::YOLO) {
+        segmenter.reset(new segmentation::Yolo());
+      }
     }
   }
   ~Impl() = default;
@@ -29,9 +36,13 @@ struct Pipeline::Impl {
       std::vector<detection::Detection> ds =
           detector->run(video);
       frames = draw(ds);
+    } else if (task == Task::SEGMENTATION) {
+      std::vector<segmentation::Mask> ds =
+          segmentation->run(video);
+      frames = draw(ds);
     }
     std::string filename = save_loc.string();
-    int codec = cv::VideoWriter::fourcc('M', 'J', 'P', 'G');
+    int codec = cv::VideoWriter::fourcc('m', 'p', '4', 'v');
     int fps = 30;
     cv::VideoWriter writer(filename, codec, fps,
                            frames[0].size(), true);
@@ -45,6 +56,8 @@ struct Pipeline::Impl {
   std::filesystem::path save_loc;
 
   std::unique_ptr<detection::Detector> detector{nullptr};
+  std::unique_ptr<segmentation::Segmenter> segmenter{
+      nullptr};
 };
 
 Pipeline::Pipeline(Task t, Backend b,

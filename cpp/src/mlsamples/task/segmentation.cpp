@@ -1,8 +1,7 @@
 // implement detection related stuff
 #include "yoloutils.h"
-#include <mlsamples/loader.h>
-#include <mlsamples/task/detection/interface.h>
-#include <mlsamples/task/detection/yolo.h>
+#include <mlsamples/task/segmentation/interface.h>
+#include <mlsamples/task/segmentation/yolo.h>
 #include <opencv2/dnn.hpp>
 #include <opencv2/videoio.hpp>
 
@@ -11,23 +10,23 @@
 #include <vector>
 
 namespace mlsamples {
-namespace detection {
+namespace segmentation {
 //
-// detection
-Detection::Detection(cv::Mat f,
-                     const std::vector<cv::Rect> &b)
-    : frame(f), bboxes(b) {}
+// segmentation
+Mask::Mask(
+    cv::Mat f,
+    const std::vector<std::vector<std::pair<int, int>>> &m)
+    : frame(f), masks(m) {}
 
 // Impl definition
 struct Yolo::Impl {
   Impl() {
     auto temp =
-        std::make_unique<YoloV8Model>(Task::DETECTION);
+        std::make_unique<YoloV8Model>(Task::SEGMENTATION);
     model = std::move(temp);
   }
   ~Impl() = default;
-
-  std::unique_ptr<YoloV8Model> model{nullptr};
+  std::unique_ptr<YoloV8Model> model;
 };
 
 Yolo::Yolo() {
@@ -36,10 +35,9 @@ Yolo::Yolo() {
 }
 Yolo::~Yolo() = default;
 
-std::vector<Detection>
-Yolo::run(std::filesystem::path video) {
+std::vector<Mask> Yolo::run(std::filesystem::path video) {
   //
-  std::vector<Detection> detections;
+  std::vector<Mask> masks;
 
   //
   std::string vid_s = video.string();
@@ -62,10 +60,11 @@ Yolo::run(std::filesystem::path video) {
       inputs.push_back(input);
       auto [outputs, shapes] = impl->model->infer(inputs);
       cv::Size frame_size(frame.cols, frame.rows);
-      std::vector<cv::Rect> results =
-          yolo_postprocess(outputs, shapes, frame_size);
-      Detection d(frame, results);
-      detections.push_back(d);
+      std::vector<std::vector<std::pair<int, int>>>
+          results =
+              yolo_postprocess(outputs, shapes, frame_size);
+      Mask d(frame, results);
+      masks.push_back(d);
     }
 
     // If frames are not there, close it
@@ -73,8 +72,8 @@ Yolo::run(std::filesystem::path video) {
       break;
     }
   }
-  return detections;
+  return masks;
 }
-} // namespace detection
+} // namespace segmentation
 
 }; // namespace mlsamples

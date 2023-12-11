@@ -2,6 +2,7 @@
 #define INTERFACE_H
 
 #include <torch/torch.h>
+#include <opencv2/core.hpp>
 //
 
 #include <filesystem>
@@ -10,9 +11,9 @@ namespace mlsamples {
 namespace detection {
 struct Detection {
   Detection() = delete;
-  Detection(torch::Tensor f, torch::Tensor b);
-  torch::Tensor frame;
-  torch::Tensor bboxes;
+  Detection(cv::Mat f, const std::vector<cv::Rect>& b);
+  cv::Mat frame;
+  std::vector<cv::Rect> bboxes;
 };
 
 class Detector {

@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <memory>
 namespace mlsamples {
+namespace segmentation {
 
 class Yolo : public Segmenter {
 public:
@@ -18,5 +19,6 @@ private:
   struct Impl;
   std::unique_ptr<Impl> impl;
 };
+} // namespace segmentation
 } // namespace mlsamples
 #endif
