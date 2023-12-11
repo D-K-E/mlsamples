@@ -182,94 +182,122 @@ std::vector<cv::Rect> yolo_postprocess(
 } // namespace detection
 
 namespace segmentation {
-std::vector<std::vector<std::pair<int, int>>>
-yolo_postprocess(
+
+cv::Rect find_pad_size(const size_t inputW,
+                       const size_t inputH,
+                       const cv::Size &inputSize) {
+  std::vector<int> padSize;
+  float w, h, x, y;
+  float r_w = inputW / (inputSize.width * 1.0);
+  float r_h = inputH / (inputSize.height * 1.0);
+  if (r_h > r_w) {
+    w = inputW;
+    h = r_w * inputSize.height;
+    x = 0;
+    y = (inputH - h) / 2;
+  } else {
+    w = r_h * inputSize.width;
+    h = inputH;
+    x = (inputW - w) / 2;
+    y = 0;
+  }
+  return cv::Rect(x, y, w, h);
+}
+
+SegOutput::SegOutput(const std::vector<cv::Rect> &bs,
+                     const cv::Mat &s, const cv::Mat &p,
+                     const cv::Rect &r)
+    : bboxes(bs), segm(s), mask_proposals(p), roi(r) {}
+
+SegOutput yolo_postprocess(
     const std::vector<std::vector<float>> &output,
     const std::vector<std::vector<int64_t>> &shape,
     const cv::Size &frame_size) {
   const auto offset = 4;
   const auto num_classes =
       shape[0][1] - offset - shape[1][1];
-  std::vector<std::vector<float>> output0_matrix(
-      shape[0][1], std::vector<float>(shape[0][2]));
 
   // Construct output matrix
-  for (size_t i = 0; i < shape[0][1]; ++i) {
-    for (size_t j = 0; j < shape[0][2]; ++j) {
-      output0_matrix[i][j] = output[0][i * shape[0][2] + j];
-    }
-  }
-
-  std::vector<std::vector<float>> transposed_output0(
-      shape[0][2], std::vector<float>(shape[0][1]));
+  std::vector<float> mat_d(output[0].size());
+  std::copy(output[0].begin(), output[0].end(),
+            mat_d.begin());
+  cv::Mat output0_matrix(shape[0][1], shape[0][2], CV_32FC1,
+                         mat_d.data());
 
   // Transpose output matrix
-  for (int i = 0; i < shape[0][1]; ++i) {
-    for (int j = 0; j < shape[0][2]; ++j) {
-      transposed_output0[j][i] = output0_matrix[i][j];
-    }
-  }
+  cv::Mat transposed_output0 = output0_matrix.t();
 
   std::vector<cv::Rect> boxes;
   std::vector<float> confs;
-  std::vector<int> classIds;
-  const auto conf_threshold = 0.25f;
-  const auto iou_threshold = 0.4f;
 
   std::vector<std::vector<float>> picked_proposals;
 
   // Get all the YOLO proposals
   for (int i = 0; i < shape[0][2]; ++i) {
-    const auto &row = transposed_output0[i];
-    const float *bboxesPtr = row.data();
-    const float *scoresPtr = bboxesPtr + 4;
-    auto maxSPtr = std::max_element(
-        scoresPtr, scoresPtr + num_classes);
-    float score = *maxSPtr;
-    if (score > conf_threshold) {
-      boxes.emplace_back(yolo_get_rect(
-          frame_size,
-          std::vector<float>(bboxesPtr, bboxesPtr + 4)));
-      int label = maxSPtr - scoresPtr;
+    cv::Mat row = transposed_output0.row(i);
+    cv::Mat scores = row.colRange(4, num_classes);
+    auto it = std::max_element(scores.begin<float>(),
+                               scores.end<float>());
+    float score = *it;
+    if (score > kYOLO_CONFIDENCE_THRESHOLD) {
+      cv::Mat mbox = row.colRange(0, 4);
+      std::vector<float> mm;
+      for (auto mit = mbox.begin<float>();
+           mit != mbox.end<float>(); ++mit) {
+        auto m = static_cast<float>(*mit);
+        mm.push_back(m);
+      }
+      boxes.emplace_back(yolo_get_rect(frame_size, mm));
       confs.emplace_back(score);
-      classIds.emplace_back(label);
-      picked_proposals.emplace_back(std::vector<float>(
-          scoresPtr + num_classes,
-          scoresPtr + num_classes + shape[1][1]));
+      std::vector<float> proposal;
+      int end = num_classes + shape[1][1];
+      cv::Mat proposal_range =
+          row.colRange(num_classes, end);
+      for (auto pit = proposal_range.begin<float>();
+           pit != proposal_range.end<float>(); ++pit) {
+        auto p = static_cast<float>(*pit);
+        proposal.push_back(p);
+      }
+      picked_proposals.emplace_back(proposal);
     }
   }
 
   // Perform Non Maximum Suppression and draw predictions.
   std::vector<int> indices;
-  cv::dnn::NMSBoxes(boxes, confs, conf_threshold,
-                    iou_threshold, indices);
+  cv::dnn::NMSBoxes(boxes, confs,
+                    kYOLO_CONFIDENCE_THRESHOLD,
+                    kYOLO_NMS_THRESHOLD, indices);
   int sc, sh, sw;
   std::tie(sc, sh, sw) =
       std::make_tuple(static_cast<int>(shape[1][1]),
                       static_cast<int>(shape[1][2]),
                       static_cast<int>(shape[1][3]));
+
+  std::vector<float> mask_d(output[1].begin(),
+                            output[1].end());
   cv::Mat segm =
-      cv::Mat(std::vector<float>(output[1].begin(),
-                                 output[1].begin() +
-                                     sc * sh * sw))
-          .reshape(0, {sc, sw * sh});
+      cv::Mat(sc, sw * sh, CV_32FC1, mask_d.data());
+  cv::Rect pad_rect =
+      find_pad_size(kYOLO_NETWORK_WIDTH_,
+                    kYOLO_NETWORK_HEIGHT_, frame_size);
+  cv::Rect roi(
+      int((float)pad_rect.x / kYOLO_NETWORK_WIDTH_ * sw),
+      int((float)pad_rect.y / kYOLO_NETWORK_HEIGHT_ * sh),
+      int(sw - pad_rect.x / 2), int(sh - pad_rect.y / 2));
+
   cv::Mat maskProposals;
+  std::vector<cv::Rect> bboxes;
   for (int i = 0; i < indices.size(); i++) {
     int idx = indices[i];
-    maskProposals.push_back(
-        cv::Mat(picked_proposals[idx]).t());
+    std::vector<float> picked = picked_proposals[idx];
+    cv::Rect bbox = boxes[idx];
+    bboxes.push_back(bbox);
+    cv::Mat pmat = cv::Mat(picked).t();
+    maskProposals.push_back(pmat);
   }
-  std::vector<std::vector<std::pair<int, int>>> masks;
-  for (int i = 0; i < maskProposals.rows; ++i) {
-    for (int j = 0; j < maskProposals.cols; ++j) {
-      cv::Point p(i, j);
-      auto pix = maskProposals.at<unsigned int>(p);
-      std::cout << i << " x " << j < < < <
-          " x " << maskProposals.channels()
-                << " :: " << pix;
-    }
-  }
-  return masks;
+  SegOutput seg(bboxes, segm, maskProposals, roi);
+
+  return seg;
 }
 
 } // namespace segmentation
@@ -281,6 +309,7 @@ YoloV8Model::YoloV8Model(Task t) {
     p /= std::filesystem::path("yolov8x.torchscript");
   } else if (t == Task::SEGMENTATION) {
     p /= std::filesystem::path("yolov8x-seg.torchscript");
+    // p /= std::filesystem::path("yolov8x.torchscript");
   } else {
     throw std::runtime_error("Unsupported task");
   }

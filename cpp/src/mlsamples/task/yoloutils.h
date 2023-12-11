@@ -31,12 +31,22 @@ std::vector<cv::Rect> yolo_postprocess(
 }
 
 namespace segmentation {
-std::vector<std::vector<std::pair<int, int>>>
-yolo_postprocess(
+struct SegOutput {
+  SegOutput(const std::vector<cv::Rect> &bs,
+            const cv::Mat &s, const cv::Mat &p,
+            const cv::Rect &r
+            );
+  std::vector<cv::Rect> bboxes;
+  cv::Mat segm;
+  cv::Mat mask_proposals;
+  cv::Rect roi;
+};
+
+SegOutput yolo_postprocess(
     const std::vector<std::vector<float>> &outputs,
     const std::vector<std::vector<int64_t>> &shapes,
     const cv::Size &frame_size);
-}
+} // namespace segmentation
 
 struct YoloV8Model {
   YoloV8Model(Task t);

@@ -17,7 +17,7 @@ draw(const std::vector<detection::Detection> &ds) {
     std::vector<cv::Rect> boxes = d.bboxes;
     for (int i = 0; i < boxes.size(); ++i) {
       auto box = boxes[i];
-      cv::rectangle(frame, box, cv::Scalar(0));
+      cv::rectangle(frame, box, cv::Scalar(255,0,255));
     }
     results.push_back(frame);
   }
@@ -29,7 +29,10 @@ draw(const std::vector<segmentation::Mask> &masks) {
 
   std::vector<cv::Mat> results;
   auto to_p = [](const std::pair<int, int> &point) {
-    return cv::Point(point.first, point.second);
+    int x = point.first;
+    int y = point.second;
+    auto p = cv::Point(x, y);
+    return p;
   };
   for (auto mask : masks) {
     cv::Mat frame = mask.frame;
@@ -40,14 +43,14 @@ draw(const std::vector<segmentation::Mask> &masks) {
     for (int i = 0; i < ms_per_frame.size(); ++i) {
       std::vector<std::pair<int, int>> points =
           ms_per_frame[i];
-      std::vector<cv::Point> ps;
+      std::vector<cv::Point> ps(points.size());
       std::transform(points.begin(), points.end(),
                      ps.begin(), to_p);
       cv::fillConvexPoly(temp, ps.data(), ps.size(),
-                         cv::Scalar(0));
+                         cv::Scalar(255, 0, 255));
     }
     cv::Mat result;
-    cv::addWeighted(frame, 0.8, temp, 0.2, 0, result);
+    cv::addWeighted(frame, 0.6, temp, 0.4, 0, result);
     results.push_back(result);
   }
   return results;
