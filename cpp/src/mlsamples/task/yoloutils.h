@@ -13,35 +13,39 @@ const int kYOLO_CHANNEL_ = 3;
 const float kYOLO_CONFIDENCE_THRESHOLD = 0.35f;
 const float kYOLO_NMS_THRESHOLD = 0.4f;
 
-// from
+// taken from
 // https://github.com/olibartfast/object-detection-inference/blob/master/src/libtorch/YoloV8.cpp
 std::vector<float>
 yolo_preprocess_image(const cv::Mat &image);
 
-// from
+// taken from
 // https://github.com/olibartfast/object-detection-inference/blob/master/src/libtorch/YoloV8.cpp
 cv::Rect yolo_get_rect(const cv::Size &imgSz,
                        const std::vector<float> &bbox);
 
 namespace detection {
+
+// inspired from
+// https://github.com/olibartfast/object-detection-inference/blob/master/src/libtorch/YoloV8.cpp
 std::vector<cv::Rect> yolo_postprocess(
     const std::vector<std::vector<float>> &outputs,
     const std::vector<std::vector<int64_t>> &shapes,
     const cv::Size &frame_size);
-}
+} // namespace detection
 
 namespace segmentation {
 struct SegOutput {
   SegOutput(const std::vector<cv::Rect> &bs,
             const cv::Mat &s, const cv::Mat &p,
-            const cv::Rect &r
-            );
+            const cv::Rect &r);
   std::vector<cv::Rect> bboxes;
   cv::Mat segm;
   cv::Mat mask_proposals;
   cv::Rect roi;
 };
 
+// inspired from
+// https://github.com/olibartfast/object-detection-inference/blob/master/src/libtorch/YoloV8.cpp
 SegOutput yolo_postprocess(
     const std::vector<std::vector<float>> &outputs,
     const std::vector<std::vector<int64_t>> &shapes,

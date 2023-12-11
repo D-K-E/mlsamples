@@ -113,56 +113,35 @@ std::vector<cv::Rect> yolo_postprocess(
     const std::vector<std::vector<float>> &outputs,
     const std::vector<std::vector<int64_t>> &shapes,
     const cv::Size &frame_size) {
-  // from
-  // https://github.com/olibartfast/object-detection-inference/blob/master/src/libtorch/YoloV8.cpp
-
   const float *output0 = outputs.front().data();
   const std::vector<int64_t> shape0 = shapes.front();
 
   const auto offset = 4;
   const auto num_classes = shape0[1] - offset;
-  std::vector<std::vector<float>> output0_matrix(
-      shape0[1], std::vector<float>(shape0[2]));
 
-  // Construct output matrix
-  for (size_t i = 0; i < shape0[1]; ++i) {
-    for (size_t j = 0; j < shape0[2]; ++j) {
-      output0_matrix[i][j] = output0[i * shape0[2] + j];
-    }
-  }
-
-  std::vector<std::vector<float>> transposed_output0(
-      shape0[2], std::vector<float>(shape0[1]));
-
-  // Transpose output matrix
-  for (int i = 0; i < shape0[1]; ++i) {
-    for (int j = 0; j < shape0[2]; ++j) {
-      transposed_output0[j][i] = output0_matrix[i][j];
-    }
-  }
+  std::vector<float> out_d(outputs[0].begin(),
+                           outputs[0].end());
+  cv::Mat outm(shape0[1], shape0[2], CV_32FC1,
+               out_d.data());
+  cv::Mat tout_m = outm.t();
 
   std::vector<cv::Rect> boxes;
   std::vector<float> confs;
-  std::vector<int> classIds;
-
-  std::vector<std::vector<float>> picked_proposals;
 
   // Get all the YOLO proposals
   for (int i = 0; i < shape0[2]; ++i) {
-    const auto &row = transposed_output0[i];
-    const float *bboxesPtr = row.data();
-    const float *scoresPtr = bboxesPtr + 4;
-    auto maxSPtr = std::max_element(
-        scoresPtr, scoresPtr + num_classes);
-    float score = *maxSPtr;
-    if (score > kYOLO_CONFIDENCE_THRESHOLD) {
-      cv::Rect y_rect = yolo_get_rect(
-          frame_size,
-          std::vector<float>(bboxesPtr, bboxesPtr + 4));
+    cv::Mat trow = tout_m.row(i);
+    cv::Mat scores_t = trow.colRange(4, trow.cols);
+    cv::Mat box_m = trow.colRange(0, 4);
+    auto score_it = std::max_element(
+        scores_t.begin<float>(), scores_t.end<float>());
+    float m_score = *score_it;
+    if (m_score > kYOLO_CONFIDENCE_THRESHOLD) {
+      std::vector<float> bdata(box_m.begin<float>(),
+                               box_m.end<float>());
+      cv::Rect y_rect = yolo_get_rect(frame_size, bdata);
       boxes.emplace_back(y_rect);
-      int label = maxSPtr - scoresPtr;
-      confs.emplace_back(score);
-      classIds.emplace_back(label);
+      confs.emplace_back(m_score);
     }
   }
 
@@ -183,6 +162,8 @@ std::vector<cv::Rect> yolo_postprocess(
 
 namespace segmentation {
 
+// taken from
+// https://github.com/olibartfast/object-detection-inference/blob/master/src/libtorch/YoloV8.cpp
 cv::Rect find_pad_size(const size_t inputW,
                        const size_t inputH,
                        const cv::Size &inputSize) {
@@ -221,11 +202,11 @@ SegOutput yolo_postprocess(
   std::vector<float> mat_d(output[0].size());
   std::copy(output[0].begin(), output[0].end(),
             mat_d.begin());
-  cv::Mat output0_matrix(shape[0][1], shape[0][2], CV_32FC1,
-                         mat_d.data());
+  cv::Mat outm(shape[0][1], shape[0][2], CV_32FC1,
+               mat_d.data());
 
   // Transpose output matrix
-  cv::Mat transposed_output0 = output0_matrix.t();
+  cv::Mat tout_m = outm.t();
 
   std::vector<cv::Rect> boxes;
   std::vector<float> confs;
@@ -234,30 +215,21 @@ SegOutput yolo_postprocess(
 
   // Get all the YOLO proposals
   for (int i = 0; i < shape[0][2]; ++i) {
-    cv::Mat row = transposed_output0.row(i);
+    cv::Mat row = tout_m.row(i);
     cv::Mat scores = row.colRange(4, num_classes);
     auto it = std::max_element(scores.begin<float>(),
                                scores.end<float>());
     float score = *it;
     if (score > kYOLO_CONFIDENCE_THRESHOLD) {
       cv::Mat mbox = row.colRange(0, 4);
-      std::vector<float> mm;
-      for (auto mit = mbox.begin<float>();
-           mit != mbox.end<float>(); ++mit) {
-        auto m = static_cast<float>(*mit);
-        mm.push_back(m);
-      }
+      std::vector<float> mm(mbox.begin<float>(),
+                            mbox.end<float>());
       boxes.emplace_back(yolo_get_rect(frame_size, mm));
       confs.emplace_back(score);
-      std::vector<float> proposal;
       int end = num_classes + shape[1][1];
-      cv::Mat proposal_range =
-          row.colRange(num_classes, end);
-      for (auto pit = proposal_range.begin<float>();
-           pit != proposal_range.end<float>(); ++pit) {
-        auto p = static_cast<float>(*pit);
-        proposal.push_back(p);
-      }
+      cv::Mat prange = row.colRange(num_classes, end);
+      std::vector<float> proposal(prange.begin<float>(),
+                                  prange.end<float>());
       picked_proposals.emplace_back(proposal);
     }
   }
