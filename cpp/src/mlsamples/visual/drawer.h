@@ -11,8 +11,6 @@ namespace mlsamples {
 
 std::vector<cv::Mat>
 draw(const std::vector<detection::Detection> &ds);
-// std::vector<cv::Mat> draw(const std::vector<Keypoints>
-// &ks);
 
 std::vector<cv::Mat>
 draw(const std::vector<segmentation::Mask> &masks);

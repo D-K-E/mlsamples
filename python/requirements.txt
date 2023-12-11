@@ -17,6 +17,7 @@ ament-uncrustify==0.14.2
 ament-xmllint==0.14.2
 angles==1.16.0
 antlr4-python3-runtime==4.9.3
+av==11.0.0
 black==23.11.0
 builtin-interfaces==1.6.0
 cachetools==5.3.2
@@ -28,6 +29,7 @@ composition-interfaces==1.6.0
 contourpy==1.2.0
 cv-bridge==3.4.0
 cycler==0.12.1
+decorator==4.4.2
 demo-nodes-py==0.27.1
 detectron2==0.6
 diagnostic-msgs==5.0.0
@@ -51,6 +53,8 @@ grpcio==1.60.0
 hydra-core==1.3.2
 idna==3.6
 image-geometry==3.4.0
+imageio==2.33.0
+imageio-ffmpeg==0.4.9
 interactive-markers==2.4.0
 iopath==0.1.9
 Jinja2==3.1.2
@@ -69,6 +73,8 @@ Markdown==3.5.1
 MarkupSafe==2.1.3
 matplotlib==3.8.2
 message-filters==4.7.0
+-e git+ssh://git@github.com/D-K-E/mlsamples.git@ffc030afb9e9caa2d2e743211e1e0a12e6ca8850#egg=mlsamples&subdirectory=python
+moviepy==1.0.3
 mpmath==1.3.0
 mypy-extensions==1.0.0
 nav-msgs==5.0.0
@@ -98,6 +104,7 @@ pendulum-msgs==0.27.1
 Pillow==10.1.0
 platformdirs==4.1.0
 portalocker==2.8.2
+proglog==0.1.10
 protobuf==4.23.4
 psutil==5.9.6
 py-cpuinfo==9.0.0
