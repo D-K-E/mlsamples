@@ -61,24 +61,22 @@ to_mask_points(const SegOutput &results, cv::Mat frame) {
     mask = mask(results.roi);
     cv::resize(mask, mask, cv::Size(frame.cols, frame.rows),
                cv::INTER_NEAREST);
-    cv::Mat m3 = mask(results.bboxes[i]) > 0.5f;
-
-    const float mask_thresh = 0.5f;
-    int x2 = results.bboxes[i].x + results.bboxes[i].width;
-    int y2 = results.bboxes[i].y + results.bboxes[i].height;
+    cv::Mat m3 = mask(results.bboxes[i]);
+    const float mask_threshold = 0.025f;
 
     for (int w = 0; w < results.bboxes[i].width; ++w) {
       for (int h = 0; h < results.bboxes[i].height; ++h) {
         int x2 = results.bboxes[i].x + w;
         int y2 = results.bboxes[i].y + h;
-        bool pix = m3.at<bool>(cv::Point(w, h));
-        if (!pix) {
+        float pix = m3.at<float>(cv::Point(w, h));
+        if (pix > mask_threshold) {
           std::pair<int, int> point =
               std::make_pair(x2, y2);
           mask_points.push_back(point);
         }
       }
     }
+    // std::sort(mask_points.begin(), mask_points.end());
     frame_points.push_back(mask_points);
   }
   return frame_points;
