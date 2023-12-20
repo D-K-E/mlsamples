@@ -1,4 +1,4 @@
-# Coding Sample for FingerVision
+# DL Samples
 
 There are two samples in this repository: `python` and `c++`. Essentially they
 are both simple AI based video analysis tools. They both support multiple
