@@ -1,5 +1,10 @@
 # DL Samples
 
+These samples should help you get started in DL based projects.
+The main purpose in both samples is to isolate the model code from the pipeline
+that would use its services. 
+They serve as a toy deployment example in a desktop environment. 
+
 There are two samples in this repository: `python` and `c++`. Essentially they
 are both simple AI based video analysis tools. They both support multiple
 tasks:
