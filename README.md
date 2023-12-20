@@ -12,6 +12,22 @@ tasks:
 - python: detection, segmentation, pose estimation
 - c++: detection, segmentation
 
+
+
+
+Python Detectron2 Segmentation
+https://github.com/D-K-E/mlsamples/assets/22693287/9013a8dd-0c29-4d8e-8380-929cbd2aed7c
+
+
+Python Yolov8 Segmentation
+https://github.com/D-K-E/mlsamples/assets/22693287/009c200b-6f03-4123-95fe-5b1011c31153
+
+C++ Yolov8 Detection
+https://github.com/D-K-E/mlsamples/assets/22693287/d6c2e986-01f9-4e3f-bf84-4828136053c1
+
+
+
+
 Python version supports multiple backends:
 
 - YOLOv8
